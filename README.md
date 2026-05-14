@@ -10,7 +10,7 @@
 
 ## 当前开发阶段
 
-当前已完成 `P0 工程骨架`、`P1 数据模型与接口`、`P2 本地谱线数据库`、`P3 HAPI 下载` 和 `P4 单气体合成`，已包含：
+当前已完成 `P0 工程骨架`、`P1 数据模型与接口`、`P2 本地谱线数据库`、`P3 HAPI 下载`、`P4 单气体合成` 和 `P5 混合气体与扰动模型`，已包含：
 
 - Python 工程结构。
 - PySide6 桌面 GUI 空主窗口。
@@ -32,9 +32,15 @@
 - 单气体 line-by-line 吸收系数计算。
 - Beer-Lambert clean absorbance/transmittance 输出。
 - 单气体合成服务封装。
+- 混合气体 clean absorbance 叠加合成。
+- 常驻组分浓度标签、变量组分存在性标签和浓度标签。
+- Gaussian/Uniform/Relative/Spike 噪声模型。
+- Constant/Linear/Polynomial/Sine/Random smooth 基线模型。
+- baseline/noise/final absorbance 分量输出。
+- 混合气体合成服务封装。
 - 最小测试入口。
 
-当前阶段不包含混合气体、噪声、基线、批量合成和结果导出逻辑。
+当前阶段不包含批量合成、结果导出和完整 GUI 接入逻辑。
 
 ## 开发运行
 
