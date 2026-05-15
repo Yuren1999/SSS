@@ -15,6 +15,7 @@ def main() -> int:
     try:
         from PySide6.QtWidgets import QApplication
 
+        from spectra_sim.app.dependencies import build_default_services
         from spectra_sim.app.main_window import MainWindow
     except ModuleNotFoundError as exc:
         # GUI 依赖缺失时给出明确提示，避免用户只看到底层导入错误。
@@ -23,11 +24,10 @@ def main() -> int:
         return 1
 
     app = QApplication(sys.argv)
-    window = MainWindow(AppInfo.default())
+    window = MainWindow(AppInfo.default(), services=build_default_services())
     window.show()
     return app.exec()
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
