@@ -11,7 +11,9 @@ from spectra_sim.services.interfaces import (
     SynthesisService,
 )
 from spectra_sim.services.download_service import HitranDownloadService
+from spectra_sim.services.export_service import LocalExportService
 from spectra_sim.services.line_database_service import LocalLineDatabaseService
+from spectra_sim.services.batch_synthesis_service import LocalBatchSynthesisService
 from spectra_sim.services.synthesis_service import LocalSynthesisService
 
 __all__ = [
@@ -20,6 +22,8 @@ __all__ = [
     "HitranDownloadService",
     "LineDatabaseService",
     "LineDownloadService",
+    "LocalBatchSynthesisService",
+    "LocalExportService",
     "LocalLineDatabaseService",
     "LocalSynthesisService",
     "SynthesisService",

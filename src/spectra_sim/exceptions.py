@@ -25,6 +25,10 @@ class SynthesisError(SpectraSimulatorError):
     """Raised when spectrum synthesis fails."""
 
 
+class BatchError(SpectraSimulatorError):
+    """Raised when a batch synthesis task cannot be managed."""
+
+
 class ExportError(SpectraSimulatorError):
     """Raised when dataset export fails."""
 

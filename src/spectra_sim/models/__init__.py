@@ -22,12 +22,20 @@ from spectra_sim.models.enums import (
 )
 from spectra_sim.models.results import SpectrumLabels, SpectrumRecord
 from spectra_sim.models.spectral import GasSpec, LineRecord, LineTable, SpectralAxisConfig, WavenumberRange
-from spectra_sim.models.tasks import CoverageResult, DownloadTaskInfo, DownloadTaskRequest
+from spectra_sim.models.tasks import (
+    BatchSampleFailure,
+    BatchTaskResult,
+    CoverageResult,
+    DownloadTaskInfo,
+    DownloadTaskRequest,
+)
 
 __all__ = [
     "AppInfo",
     "BaselineConfig",
     "BaselineType",
+    "BatchSampleFailure",
+    "BatchTaskResult",
     "ConcentrationUnit",
     "CoverageResult",
     "DownloadMode",

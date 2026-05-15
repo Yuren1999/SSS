@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 
 from spectra_sim.exceptions import ValidationError
 from spectra_sim.models.enums import DownloadMode, TaskStatus
+from spectra_sim.models.results import SpectrumRecord
 from spectra_sim.models.spectral import GasSpec, WavenumberRange
 
 
@@ -47,3 +48,33 @@ class CoverageResult:
         if self.is_covered and self.missing_ranges:
             raise ValidationError("覆盖完整时不应包含缺失区间")
 
+
+@dataclass(frozen=True)
+class BatchSampleFailure:
+    """Failure information for one sample in a batch task."""
+
+    sample_index: int
+    message: str
+
+    def __post_init__(self) -> None:
+        if self.sample_index < 0:
+            raise ValidationError("sample_index must be non-negative")
+        if not self.message.strip():
+            raise ValidationError("failure message must not be empty")
+
+
+@dataclass(frozen=True)
+class BatchTaskResult:
+    """Stored result of one batch synthesis task."""
+
+    task_id: str
+    status: TaskStatus
+    records: tuple[SpectrumRecord, ...] = field(default_factory=tuple)
+    failures: tuple[BatchSampleFailure, ...] = field(default_factory=tuple)
+    message: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.task_id.strip():
+            raise ValidationError("batch task id must not be empty")
+        object.__setattr__(self, "records", tuple(self.records))
+        object.__setattr__(self, "failures", tuple(self.failures))
