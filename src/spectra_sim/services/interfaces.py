@@ -6,12 +6,14 @@ from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence, runtime_checkable
 
 from spectra_sim.models import (
+    BatchTaskResult,
     CoverageResult,
     DownloadTaskInfo,
     DownloadTaskRequest,
     GasSpec,
     LineTable,
     OutputConfig,
+    SavedResultDataset,
     SpectrumRecord,
     SynthesisConfig,
     WavenumberRange,
@@ -85,6 +87,10 @@ class BatchSynthesisService(Protocol):
         """Run a batch task and return the task id."""
         ...
 
+    def get_task_result(self, task_id: str) -> BatchTaskResult:
+        """Return the stored result for one batch task."""
+        ...
+
     def pause_task(self, task_id: str) -> None:
         """Pause a running batch task."""
         ...
@@ -102,3 +108,19 @@ class ExportService(Protocol):
         """Write spectra, labels and metadata to disk."""
         ...
 
+
+@runtime_checkable
+class ResultRepositoryService(Protocol):
+    """Boundary for persisted synthesized result datasets."""
+
+    def save_records(self, records: Sequence[SpectrumRecord], name: str | None = None) -> SavedResultDataset:
+        """Persist synthesized records and return dataset metadata."""
+        ...
+
+    def list_datasets(self) -> Sequence[SavedResultDataset]:
+        """Return persisted result datasets."""
+        ...
+
+    def load_records(self, dataset_id: str) -> Sequence[SpectrumRecord]:
+        """Load one persisted result dataset."""
+        ...

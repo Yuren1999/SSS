@@ -8,13 +8,16 @@ from PySide6.QtWidgets import QApplication, QTabWidget  # noqa: E402
 
 from spectra_sim.app.dependencies import AppServices  # noqa: E402
 from spectra_sim.app.main_window import MainWindow  # noqa: E402
-from spectra_sim.app.pages import DownloadPage, SynthesisPage  # noqa: E402
+from spectra_sim.app.pages import BatchExportPage, DownloadPage, ResultsPage, SynthesisPage  # noqa: E402
+from spectra_sim.app.result_store import ResultStore  # noqa: E402
 from spectra_sim.models import (  # noqa: E402
     AppInfo,
+    BatchTaskResult,
     DownloadTaskInfo,
     DownloadTaskRequest,
     GasSpec,
     LineTable,
+    SavedResultDataset,
     SpectrumRecord,
     TaskStatus,
     WavenumberRange,
@@ -71,11 +74,21 @@ class FakeSynthesisService:
 
 
 class FakeBatchService:
+    def __init__(self) -> None:
+        self.result = BatchTaskResult(
+            task_id="batch-1",
+            status=TaskStatus.SUCCEEDED,
+            records=(make_record("batch-1-000000"),),
+        )
+
     def expand_parameters(self, batch_config):
         return ()
 
     def run_batch(self, batch_config):
         return "batch-1"
+
+    def get_task_result(self, task_id: str) -> BatchTaskResult:
+        return self.result
 
     def pause_task(self, task_id: str) -> None:
         return None
@@ -89,6 +102,38 @@ class FakeExportService:
         return Path("dummy")
 
 
+class FakeResultRepository:
+    def __init__(self) -> None:
+        self.saved_records = ()
+        self.dataset = SavedResultDataset(
+            dataset_id="dataset-1",
+            name="dataset-1",
+            record_count=1,
+            storage_path=Path("dummy"),
+            created_at="2026-05-15T00:00:00+00:00",
+        )
+
+    def save_records(self, records, name=None):
+        self.saved_records = tuple(records)
+        return self.dataset
+
+    def list_datasets(self):
+        return (self.dataset,) if self.saved_records else ()
+
+    def load_records(self, dataset_id: str):
+        return self.saved_records
+
+
+def make_record(sample_id: str = "preview") -> SpectrumRecord:
+    return SpectrumRecord(
+        sample_id=sample_id,
+        wavenumber=(6000.0, 6001.0),
+        clean_absorbance=(0.1, 0.2),
+        final_absorbance=(0.1, 0.2),
+        transmittance=(0.9, 0.8),
+    )
+
+
 def make_services() -> AppServices:
     line_database = FakeLineDatabaseService()
     return AppServices(
@@ -97,6 +142,8 @@ def make_services() -> AppServices:
         synthesis=FakeSynthesisService(),
         batch=FakeBatchService(),
         export=FakeExportService(),
+        result_store=ResultStore(),
+        result_repository=FakeResultRepository(),
         database_path=Path("dummy.sqlite"),
     )
 
@@ -114,8 +161,12 @@ class GuiPagesTestCase(unittest.TestCase):
 
         self.assertIn("谱线下载", tab_names)
         self.assertIn("光谱合成", tab_names)
+        self.assertIn("批量与导出", tab_names)
+        self.assertIn("结果浏览", tab_names)
         self.assertIsNotNone(window.findChild(DownloadPage, "downloadPage"))
         self.assertIsNotNone(window.findChild(SynthesisPage, "synthesisPage"))
+        self.assertIsNotNone(window.findChild(BatchExportPage, "batchExportPage"))
+        self.assertIsNotNone(window.findChild(ResultsPage, "resultsPage"))
 
     def test_download_page_has_no_synthesis_service_dependency(self) -> None:
         window = MainWindow(AppInfo.default(), services=make_services())
@@ -128,6 +179,23 @@ class GuiPagesTestCase(unittest.TestCase):
         synthesis_page = window.findChild(SynthesisPage, "synthesisPage")
 
         self.assertFalse(hasattr(synthesis_page, "_download_service"))
+
+    def test_batch_export_page_has_no_download_service_dependency(self) -> None:
+        window = MainWindow(AppInfo.default(), services=make_services())
+        batch_page = window.findChild(BatchExportPage, "batchExportPage")
+
+        self.assertFalse(hasattr(batch_page, "_download_service"))
+
+    def test_batch_page_updates_shared_result_store(self) -> None:
+        services = make_services()
+        window = MainWindow(AppInfo.default(), services=services)
+        batch_page = window.findChild(BatchExportPage, "batchExportPage")
+
+        batch_page.run_batch()
+
+        self.assertEqual(len(services.result_store.records), 1)
+        self.assertEqual(services.result_store.records[0].sample_id, "batch-1-000000")
+        self.assertEqual(len(services.result_repository.saved_records), 1)
 
 
 if __name__ == "__main__":

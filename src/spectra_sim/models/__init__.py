@@ -20,7 +20,7 @@ from spectra_sim.models.enums import (
     PressureUnit,
     TaskStatus,
 )
-from spectra_sim.models.results import SpectrumLabels, SpectrumRecord
+from spectra_sim.models.results import SavedResultDataset, SpectrumLabels, SpectrumRecord
 from spectra_sim.models.spectral import GasSpec, LineRecord, LineTable, SpectralAxisConfig, WavenumberRange
 from spectra_sim.models.tasks import (
     BatchSampleFailure,
@@ -53,6 +53,7 @@ __all__ = [
     "OutputFormat",
     "PathLengthUnit",
     "PressureUnit",
+    "SavedResultDataset",
     "SpectralAxisConfig",
     "SpectrumLabels",
     "SpectrumRecord",

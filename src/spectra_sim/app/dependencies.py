@@ -7,6 +7,7 @@ from pathlib import Path
 
 from spectra_sim.database import LineDatabaseRepository
 from spectra_sim.hitran import HapiLineDownloader
+from spectra_sim.app.result_store import ResultStore
 from spectra_sim.services import (
     BatchSynthesisService,
     ExportService,
@@ -16,7 +17,9 @@ from spectra_sim.services import (
     LocalBatchSynthesisService,
     LocalExportService,
     LocalLineDatabaseService,
+    LocalResultService,
     LocalSynthesisService,
+    ResultRepositoryService,
     SynthesisService,
 )
 
@@ -30,6 +33,8 @@ class AppServices:
     synthesis: SynthesisService
     batch: BatchSynthesisService
     export: ExportService
+    result_store: ResultStore
+    result_repository: ResultRepositoryService
     database_path: Path
 
 
@@ -49,6 +54,8 @@ def build_default_services(project_root: Path | None = None) -> AppServices:
     synthesis = LocalSynthesisService(line_database)
     batch = LocalBatchSynthesisService(synthesis)
     export = LocalExportService()
+    result_store = ResultStore()
+    result_repository = LocalResultService.from_path(root / "data" / "results")
 
     return AppServices(
         line_database=line_database,
@@ -56,5 +63,7 @@ def build_default_services(project_root: Path | None = None) -> AppServices:
         synthesis=synthesis,
         batch=batch,
         export=export,
+        result_store=result_store,
+        result_repository=result_repository,
         database_path=database_path,
     )

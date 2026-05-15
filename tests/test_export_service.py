@@ -1,4 +1,5 @@
 import csv
+import importlib.util
 import tempfile
 import unittest
 from pathlib import Path
@@ -62,15 +63,44 @@ class ExportServiceTestCase(unittest.TestCase):
                 self.assertEqual(dataset["clean_absorbance"].shape, (2, 2))
                 self.assertEqual(dataset["sample_id"].tolist(), ["sample-1", "sample-2"])
 
-    def test_export_rejects_unimplemented_storage_format(self) -> None:
+    def test_export_hdf5_writes_file_when_dependency_is_available(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             service = LocalExportService()
+            if importlib.util.find_spec("h5py") is None:
+                with self.assertRaises(ExportError):
+                    service.export_spectra(
+                        [make_record()],
+                        OutputConfig(output_format=OutputFormat.HDF5, output_dir=temp_dir),
+                    )
+                return
 
-            with self.assertRaises(ExportError):
-                service.export_spectra(
-                    [make_record()],
-                    OutputConfig(output_format=OutputFormat.HDF5, output_dir=temp_dir),
-                )
+            output_path = service.export_spectra(
+                [make_record()],
+                OutputConfig(output_format=OutputFormat.HDF5, output_dir=temp_dir),
+            )
+
+            self.assertEqual(output_path.name, "spectra_dataset.h5")
+            self.assertTrue(output_path.exists())
+
+    def test_export_parquet_writes_tables_when_dependencies_are_available(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            service = LocalExportService()
+            if importlib.util.find_spec("pandas") is None or importlib.util.find_spec("pyarrow") is None:
+                with self.assertRaises(ExportError):
+                    service.export_spectra(
+                        [make_record()],
+                        OutputConfig(output_format=OutputFormat.PARQUET, output_dir=temp_dir),
+                    )
+                return
+
+            output_path = service.export_spectra(
+                [make_record()],
+                OutputConfig(output_format=OutputFormat.PARQUET, output_dir=temp_dir),
+            )
+
+            self.assertTrue((output_path / "spectra.parquet").exists())
+            self.assertTrue((output_path / "labels.parquet").exists())
+            self.assertTrue((output_path / "metadata.parquet").exists())
 
 
 if __name__ == "__main__":

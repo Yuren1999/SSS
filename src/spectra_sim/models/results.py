@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Mapping, Sequence
 
 from spectra_sim.exceptions import ValidationError
@@ -73,3 +74,23 @@ class SpectrumRecord:
             object.__setattr__(self, field_name, values)
 
         object.__setattr__(self, "metadata", dict(self.metadata))
+
+
+@dataclass(frozen=True)
+class SavedResultDataset:
+    """Persisted synthesized result dataset metadata."""
+
+    dataset_id: str
+    name: str
+    record_count: int
+    storage_path: Path
+    created_at: str
+
+    def __post_init__(self) -> None:
+        if not self.dataset_id.strip():
+            raise ValidationError("dataset id must not be empty")
+        if not self.name.strip():
+            raise ValidationError("dataset name must not be empty")
+        if self.record_count < 0:
+            raise ValidationError("record count must be non-negative")
+        object.__setattr__(self, "storage_path", Path(self.storage_path))

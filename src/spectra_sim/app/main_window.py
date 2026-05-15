@@ -5,7 +5,7 @@ from __future__ import annotations
 from PySide6.QtWidgets import QMainWindow, QStatusBar, QTabWidget, QWidget
 
 from spectra_sim.app.dependencies import AppServices, build_default_services
-from spectra_sim.app.pages import DownloadPage, LocalDatabasePage, PlaceholderPage, SynthesisPage
+from spectra_sim.app.pages import BatchExportPage, DownloadPage, LocalDatabasePage, ResultsPage, SynthesisPage
 from spectra_sim.models.app import AppInfo
 
 
@@ -43,11 +43,17 @@ class MainWindow(QMainWindow):
             "光谱合成",
         )
         tabs.addTab(
-            PlaceholderPage("批量与导出", "后续接入批量参数、任务结果和 CSV/NPZ 导出服务", self),
+            BatchExportPage(
+                self._services.batch,
+                self._services.export,
+                self._services.result_store,
+                self._services.result_repository,
+                self,
+            ),
             "批量与导出",
         )
         tabs.addTab(
-            PlaceholderPage("结果浏览", "后续接入历史结果、曲线显示和导出文件浏览", self),
+            ResultsPage(self._services.result_store, self._services.result_repository, self),
             "结果浏览",
         )
         self.setCentralWidget(tabs)

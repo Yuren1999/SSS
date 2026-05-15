@@ -19,8 +19,10 @@ dist/
 
 logs/
 data/local_line_db/
+data/exports/
 data/outputs/
+data/results/
 
 .idea/
 .vscode/
-
+*.baiduyun.uploading.cfg
